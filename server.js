@@ -1,7 +1,3 @@
-/* Showing Mongoose's "Populated" Method (18.3.8)
- * INSTRUCTOR ONLY
- * =============================================== */
-
 // Dependencies
 var express = require("express");
 var bodyParser = require("body-parser");
@@ -140,6 +136,7 @@ app.post("/articles/:id", function(req, res) {
   });
 });
 
+//delete a note route
 app.post("/articles/:id/delete", function(req,res){
   console.log("deleting the note");
   console.log(req.params.id);
