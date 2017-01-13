@@ -46,11 +46,11 @@ function showNotes(){
       $("#notesContent").append("<h5>" + data.title + "</h5>");
       
       // A button to submit a new note, with the id of the article saved to it
-      $(".modal-footer").append("<a href='#!' id='savenote' data-id='"+ data._id + "' class='modal-action modal-close waves-effect waves-green btn-flat' >Save</a>");
+      $(".modal-footer").append("<a href='#!' id='cancel' class='modal-action modal-close waves-effect waves-green btn-flat'>Cancel</a> <a href='#!' id='savenote' data-id='"+ data._id + "' class='modal-action modal-close waves-effect waves-green btn-flat' >Save & Close</a>");
       // If there's a note in the article
       if (data.note.length >0) {
         data.note.forEach(function(note, i){
-          $("#notesContent").append("<div id='note"+i+"'><p class='noteTitle'>"+note.title+"</p><a data-index='"+i+"' data-parent='"+data._id+"' data-id='"+ note._id + "' class='red darken-4 btn tooltipped trash' data-position='left' data-delay='50' data-tooltip='Delete this comment'><i  class=' material-icons'>delete</i></a><p>"+note.body+"</p></div><hr>")
+          $("#notesContent").append("<div id='note"+i+"'><p class='noteTitle'>"+note.title+"</p><a data-index='"+i+"' data-parent='"+data._id+"' data-id='"+ note._id + "' class='red darken-4 btn tooltipped trash' data-position='left' data-delay='50' data-tooltip='Delete this comment'><i  class=' material-icons'>delete</i></a><p>"+note.body+"</p><hr></div>")
         })
       } else{
         $("#notesContent").append("<p class='noteTitle'>No comments yet.</p>")
@@ -66,6 +66,11 @@ function showNotes(){
 
 // Whenever someone clicks a p tag
 $(document).on("click", ".showNotes", showNotes);
+
+$(document).on("click", "#cancel", function(){
+  $('#notes').modal('close');
+  $("#notesContent").empty();
+})
 
 // When you click the savenote button
 $(document).on("click", "#savenote", function() {
@@ -104,6 +109,7 @@ $(document).on("click", "#savenote", function() {
 
 //deleting a note
 $(document).on("click",".trash", function(){
+   $(this).tooltip('hide')
   var index = $(this).attr("data-index")
   console.log(index);
   $("#note"+index).empty();
@@ -115,7 +121,7 @@ $(document).on("click",".trash", function(){
 
     }
   }).done(function(data){
-
+    $('.tooltipped').tooltip('remove');
     showNotes();
   })
 
