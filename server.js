@@ -140,6 +140,19 @@ app.post("/articles/:id", function(req, res) {
   });
 });
 
+app.post("/articles/:id/delete", function(req,res){
+  console.log("deleting the note");
+  console.log(req.params.id);
+  console.log(req.body);
+  Note.remove({"_id":req.params.id}, function(data){
+    console.log(data)
+  })
+
+  Article.findOneAndUpdate({"_id": req.body.article}, { $pull:{"note": req.params.id}}, function(err){
+    if (err) console.log(err);
+  })
+});
+
 
 // Listen on port 3000
 app.listen(3000, function() {

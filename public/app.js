@@ -21,9 +21,12 @@ $(document).ready(function(){
     // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
     $('.modal').modal();
   });
+//initialize tooltips
+$(document).ready(function(){
+    $('.tooltipped').tooltip({delay: 50});
+  });
 
-// Whenever someone clicks a p tag
-$(document).on("click", ".showNotes", function() {
+function showNotes(){
   // Empty the notes from the note section
   $("#notes").modal("open");
   $("#notesContent").empty();
@@ -46,48 +49,77 @@ $(document).on("click", ".showNotes", function() {
       $(".modal-footer").append("<a href='#!' id='savenote' data-id='"+ data._id + "' class='modal-action modal-close waves-effect waves-green btn-flat' >Save</a>");
       // If there's a note in the article
       if (data.note.length >0) {
-        data.note.forEach(function(note){
-          $("#notesContent").append("<p class='noteTitle'>"+note.title+"</p><p>"+note.body+"</p><hr>")
+        data.note.forEach(function(note, i){
+          $("#notesContent").append("<div id='note"+i+"'><p class='noteTitle'>"+note.title+"</p><a data-index='"+i+"' data-parent='"+data._id+"' data-id='"+ note._id + "' class='red darken-4 btn tooltipped trash' data-position='left' data-delay='50' data-tooltip='Delete this comment'><i  class=' material-icons'>delete</i></a><p>"+note.body+"</p></div><hr>")
         })
       } else{
         $("#notesContent").append("<p class='noteTitle'>No comments yet.</p>")
       }
+       $(document).ready(function(){
+        $('.tooltipped').tooltip({delay: 50});
+        });
       // An input to enter a new title
       $("#notesContent").append("<br><br><div id='addComment'><h5>Add a Comment</h5><input id='titleinput' name='title' placeholder='Comment Title'><div class='input-field'><label for='bodyinput'>Comment Body</label><textarea class='materialize-textarea' id='bodyinput' name='body'></textarea></div><br></div>");
 
     });
-});
+}
+
+// Whenever someone clicks a p tag
+$(document).on("click", ".showNotes", showNotes);
 
 // When you click the savenote button
 $(document).on("click", "#savenote", function() {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
+  if ($("#titleinput").val() !== "" && $("#bodyinput").val()!==""){
+      // Run a POST request to change the note, using what's entered in the inputs
+    $.ajax({
+      method: "POST",
+      url: "/articles/" + thisId,
+      data: {
+        // Value taken from title input
+        title: $("#titleinput").val(),
+        // Value taken from note textarea
+        body: $("#bodyinput").val()
+      }
+    })
+      // With that done
+      .done(function(data) {
+        // Log the response
+        $('#notes').modal('close');
+        // Empty the notes section
 
-  // Run a POST request to change the note, using what's entered in the inputs
-  $.ajax({
-    method: "POST",
-    url: "/articles/" + thisId,
-    data: {
-      // Value taken from title input
-      title: $("#titleinput").val(),
-      // Value taken from note textarea
-      body: $("#bodyinput").val()
-    }
-  })
-    // With that done
-    .done(function(data) {
-      // Log the response
-      $('#notes').modal('close');
-      // Empty the notes section
+        $("#notesContent").empty();
+      });
 
-      $("#notesContent").empty();
-    });
-
-  // Also, remove the values entered in the input and textarea for note entry
-  $("#titleinput").val("");
-  $("#bodyinput").val("");
-  refreshArticles();
+    // Also, remove the values entered in the input and textarea for note entry
+    $("#titleinput").val("");
+    $("#bodyinput").val("");
+    refreshArticles();
+  } else{
+    Materialize.toast('You need to enter both a title and comment!', 3000)
+  }
+  
 });
+
+//deleting a note
+$(document).on("click",".trash", function(){
+  var index = $(this).attr("data-index")
+  console.log(index);
+  $("#note"+index).empty();
+  $.ajax({
+    method:"POST",
+    url:"/articles/"+$(this).attr("data-id")+"/delete",
+    data:{ article:$(this).attr("data-parent"),
+      index:$(this).attr("data-index")
+
+    }
+  }).done(function(data){
+
+    showNotes();
+  })
+
+})
 
 
 $("#grabNew").on("click", function(){
